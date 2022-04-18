@@ -1,25 +1,42 @@
 import std/[os, random]
 import winim
 
-type
-    SendKeys = array[2, INPUT]
-var
-    inputs: SendKeys
 const
-    key = VK_NUMLOCK
     delayMin = 25_000
     delayJitter = 10_000
 
-# Key Down event
-inputs[0].type = INPUT_KEYBOARD
-inputs[0].ki.wVk = key
+proc pressKey(key: WORD) =
+    var keys: array[2, INPUT]
+    # Key Down
+    keys[0].type = INPUT_KEYBOARD
+    keys[0].ki.wVk = key
+    # Key Up
+    keys[1].type = INPUT_KEYBOARD
+    keys[1].ki.wVk = key
+    keys[1].ki.dwFlags = KEYEVENTF_KEYUP
+    SendInput((UINT)len(keys), &keys[0], (int32)sizeof(INPUT));
 
-# Key Up event
-inputs[1].type = INPUT_KEYBOARD
-inputs[1].ki.wVk = key
-inputs[1].ki.dwFlags = KEYEVENTF_KEYUP
+proc holdDownKey(key: WORD) =
+    var keys: array[1, INPUT]
+    # Key Down
+    keys[0].type = INPUT_KEYBOARD
+    keys[0].ki.wVk = key
+    SendInput((UINT)len(keys), &keys[0], (int32)sizeof(INPUT));
 
-# Send keypress randomly
+proc releaseKey(key: WORD) =
+    var keys: array[1, INPUT]
+    # Key Up
+    keys[0].type = INPUT_KEYBOARD
+    keys[0].ki.wVk = key
+    keys[0].ki.dwFlags = KEYEVENTF_KEYUP
+    SendInput((UINT)len(keys), &keys[0], (int32)sizeof(INPUT));
+
 while true:
-    SendInput((UINT)len(inputs), &inputs[0], (int32)sizeof(INPUT));
+    # holdDownKey(VK_NUMLOCK)
+    # sleep(2_000)
+    # releaseKey(VK_NUMLOCK)
+    # sleep(8_000)
+    echo "NL"
+    pressKey(VK_NUMLOCK)
     sleep(delayMin + rand(delayJitter))
+    
